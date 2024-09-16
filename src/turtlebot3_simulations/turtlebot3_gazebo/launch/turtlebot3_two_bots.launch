@@ -1,0 +1,10 @@
+<launch>
+  <!-- Launch the empty world -->
+  <include file="$(find turtlebot3_gazebo)/launch/turtlebot3_empty_world.launch"/>
+  
+  <!-- Spawn the first TurtleBot -->
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_turtlebot3_1" args="-param robot_description -urdf -model turtlebot3_1 -x 0 -y 0 -z 0.1" />
+
+  <!-- Spawn the second TurtleBot -->
+  <node pkg="gazebo_ros" type="spawn_model" name="spawn_turtlebot3_2" args="-param robot_description -urdf -model turtlebot3_2 -x 1 -y 0 -z 0.1" />
+</launch>
