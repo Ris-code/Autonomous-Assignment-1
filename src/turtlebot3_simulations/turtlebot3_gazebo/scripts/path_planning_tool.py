@@ -111,14 +111,17 @@ class PathPlanningTool(BaseModel):
 
     def run_client_agent(path):
         result = ClientAgent.move_client_agent(path)
-        print(result)
 
     def run_building_agent(path):
         result = BuildingAgent.move_building_agent(path)
-        print(result)
+        
+        if(result == 'Reached destination'):
+            ClientAgent.stop_follower = True
     
     def visitor_and_client(self, occupancy_grid):
-        print("Client + Visitor system operating")
+        rospy.loginfo("Visitor: Hello Campus Agent!! Could you please guide me to cse department")
+        rospy.loginfo("Campus Agent: Sure I will guide you to cse department")
+
         start_pose = ClientAgent.inverse_convert_coordinates(2, -5)
         goal_pose = ClientAgent.inverse_convert_coordinates(1, -1)
         path = self.a_star_algorithm(occupancy_grid, start_pose, goal_pose)
@@ -160,7 +163,12 @@ class PathPlanningTool(BaseModel):
         rospy.loginfo("Hey Visitor!! You have reached the building")
     
     def visitor_and_building_agent(self, occupancy_grid):
-        print("Building agent + visitor system operating")
+        rospy.loginfo("Building agnet: Hey campus agent!! In which room are you willing to go ?")
+        rospy.loginfo("Campus agent: Hey visitor , In which Lab are you willing to go ?")
+        rospy.loginfo("Visitor: I want to go to LAB1")
+        rospy.loginfo("Campus agent: Hey building agent the visitor wants to go to LAB1")
+        rospy.loginfo("Building agent: Ok, I will guide you to LAB1")
+        
         start_pose = ClientAgent.inverse_convert_coordinates(0, 0.5)
 
         room = {'LAB1': (-6,4), 'LAB2': (), 'Office': (), 'Discussion Room': ()}
@@ -177,18 +185,22 @@ class PathPlanningTool(BaseModel):
         # path = obj.bfs_traversal(occupancy_grid, start_pose, goal_pose)
         print(path)
 
+        ClientAgent.stop_follower = False
         # Run follower and building_agent in parallel using threads
         building_agent_thread = threading.Thread(target=self.run_building_agent, args=(path,))
         building_agent_follower_thread = threading.Thread(target=self.building_agent_run_follower, args=())
-
+        client_follow_builder = threading.Thread(target=self.client_run_follower, args=())
+        
         # Start both threads
         building_agent_thread.start()
         building_agent_follower_thread.start()
-
+        client_follow_builder.start()
+        
         # Wait for both threads to finish
         building_agent_thread.join()
         building_agent_follower_thread.join()
-
+        client_follow_builder.join()
+        
         rospy.loginfo('Kudos Visitor!! You have reached your final location')
         
     def run(self):
@@ -196,7 +208,6 @@ class PathPlanningTool(BaseModel):
         occupancy_grid= self.load_map()
 
         self.visitor_and_client(occupancy_grid)
-        self.move_client_aside(occupancy_grid)
         self.visitor_and_building_agent(occupancy_grid)
         
         rospy.loginfo('Mission Accomplished Boss!!')

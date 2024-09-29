@@ -22,7 +22,7 @@ class BuildingAgent(BaseModel):
         self.vel_sub = rospy.Subscriber('building_agent/cmd_vel', Twist, queue_size=10)
         
         # Topic to publish msg to visitor about building agent velocity
-        self.visitor_vel_pub = rospy.Publisher('visitor/cmd_vel', Twist, self.callback)
+        self.visitor_vel_pub = rospy.Publisher('client_agent/cmd_vel', Twist, self.callback)
         
         # Topic to get the current position info from /gazebo node
         self.odom_sub = rospy.Subscriber('building_agent/odom', Odometry, self.odom_callback)
